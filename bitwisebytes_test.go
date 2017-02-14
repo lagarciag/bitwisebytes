@@ -48,6 +48,26 @@ func TestShiftLeft(t *testing.T) {
 
 }
 
+func TestShiftLeft2(t *testing.T) {
+	inputSlice := []byte{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}
+	t.Logf("input bitfield:         %-3v", inputSlice)
+	outputSlice, _ := bitwisebytes.ShiftLeft(inputSlice,32)
+
+	t.Logf("outputslice shiftLeft:  %-3v",outputSlice)
+
+	outputSlice, _ = bitwisebytes.ShiftRight(outputSlice,32)
+
+	t.Logf("outputslice shiftRight: %-3v",outputSlice)
+
+	lostBytes := 4
+
+	for i := 0;i < (len(inputSlice) - lostBytes);i++ {
+		if inputSlice[i] != outputSlice[i] {
+			t.Error("mistmatch in byte comparison")
+		}
+	}
+}
+
 
 func TestBitfieldShiftLeftRight(t *testing.T) {
 	inputBitfield := []byte{1,0,0,0,0,0,0,0 ,0,0,0,0,0,0,0,0x80,0,0,0,0,0,0,0,0,0}

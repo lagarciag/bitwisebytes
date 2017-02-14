@@ -1,7 +1,7 @@
 package bitwisebytes
 
 import (
-	//"fmt"
+	"fmt"
 	"encoding/binary"
 	"math"
 	"unsafe"
@@ -43,14 +43,13 @@ func ShiftLeft(inputBuffer []byte, shiftCount uint) (outputBuffer []byte, err er
 	// --------------------------------------------------------
 	for i , word := range sliceOfWords {
 
-		shiftedWord := (uint(word) << bitsShift) //| carry
-		carry = uint(word) >> uint(BitsWordSize -bitsShift)
-
-		carryMask := uint(math.Pow(2,float64(bitsShift)) - 1)
+		shiftedWord := (uint(word) << bitsShift) | carry
+		carry = uint(word)
+		carryMask := uint(math.Pow(2,float64(bitsShift))) - 1
 		maskShift := uint(BitsWordSize - bitsShift)
 		carryMask = carryMask << maskShift
-
-		tmpWordsBuffer[i] = shiftedWord | (carry & carryMask)
+		carry = (carry & carryMask) >> uint(BitsWordSize -bitsShift)
+		tmpWordsBuffer[i] = shiftedWord //| (carry & carryMask)
 	}
 	// ---------------------------
 	// Now do the Words shifting
@@ -100,7 +99,7 @@ func ShiftRight(inputBuffer []byte, shiftCount uint) (outputBuffer []byte, err e
 		shiftedWord := (uint(word) >> bitsShift) | carry
 		tmpWordsBuffer[i] = shiftedWord
 		carry = uint(word)
-		carryMask := uint(math.Pow(2,float64(bitsShift)) - 1)
+		carryMask := uint(math.Pow(2,float64(bitsShift))) - 1
 		carryShift := uint(BitsWordSize - bitsShift)
 		carry = (carry & carryMask) << carryShift
 	}
@@ -217,3 +216,59 @@ func ShiftWordsSliceRight(buff []uint, shiftWords int) (returnBuff []uint) {
 	return returnBuff
 }
 
+
+func And(inputOutput []byte, operand []byte) (err error){
+	if len(inputOutput) != len(operand) {
+		return fmt.Errorf("input and operand must of of the same lenth")
+	}
+	for i , op := range  operand {
+		inputOutput[i] = inputOutput[i] & op
+	}
+	return err
+}
+
+
+func Or(inputOutput []byte, operand []byte) (err error){
+	if len(inputOutput) != len(operand) {
+		return fmt.Errorf("input and operand must of of the same lenth")
+	}
+	for i , op := range  operand {
+		inputOutput[i] = inputOutput[i] | op
+	}
+	return err
+}
+
+func MakeMask(size uint, width uint, offset uint) (outputMask []byte) {
+
+	maskWords := size / BytesWordSize
+	modulus := size % BytesWordSize
+	if modulus >0 {
+		maskWords ++
+	}
+	wordsSlice := make([]uint,maskWords)
+	widthModulus := width % BitsWordSize
+
+	for i, _ := range wordsSlice {
+		if uint(i) == (maskWords - 1) {
+			if widthModulus > 0 {
+				wordsSlice[i] = uint(math.Pow(2,float64(widthModulus))) - 1
+			}else{
+				wordsSlice[i] = uint(math.Pow(2,float64(BitsWordSize))) - 1
+			}
+		}else {
+			wordsSlice[i] = uint(math.Pow(2,float64(BitsWordSize))) - 1
+		}
+	}
+
+	outputMask = WordSliceToByteSlice(wordsSlice)
+
+	if offset > 0 {
+		var err error
+		outputMask , err = ShiftLeft(outputMask,offset)
+		if err != nil {
+			log.Panic(err.Error())
+		}
+	}
+
+	return outputMask[0:size]
+}
