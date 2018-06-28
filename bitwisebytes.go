@@ -259,7 +259,6 @@ func MakeMask(size uint, width uint, offset uint) (outputMask []byte) {
 			wordsSlice[i] = uint(math.Pow(2,float64(BitsWordSize))) - 1
 		}
 	}
-	fmt.Println("WS" ,wordsSlice)
 	outputMask = WordSliceToByteSlice(wordsSlice)
 
 	if offset > 0 {

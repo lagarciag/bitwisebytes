@@ -3,19 +3,18 @@ package bitwisebytes_test
 
 import (
 	"testing"
-	log "github.com/Sirupsen/logrus"
 	"os"
 	"github.com/lagarciag/bitwisebytes"
+	"time"
+	"fmt"
+	"math/rand"
 )
 
 func TestMain(t *testing.M) {
-	log.SetLevel(log.DebugLevel)
-	formatter := &log.TextFormatter{}
-	formatter.ForceColors = true
-	formatter.DisableTimestamp = true
-	log.SetFormatter(formatter)
+	seed := int64(time.Now().Nanosecond())
+	rand.Seed(seed)
+	fmt.Println("SEED:", seed)
 	v := t.Run()
-
 	os.Exit(v)
 
 }
@@ -67,7 +66,6 @@ func TestShiftLeft2(t *testing.T) {
 		}
 	}
 }
-
 
 func TestBitfieldShiftLeftRight(t *testing.T) {
 	inputBitfield := []byte{1,0,0,0,0,0,0,0 ,0,0,0,0,0,0,0,0x80,0,0,0,0,0,0,0,0,0}
@@ -169,11 +167,11 @@ func TestShiftWordsSliceRightLeft(t *testing.T) {
 
 
 	if len(inputSlice) != len(outputSlice) {
-		log.Error("lengths differ")
+		t.Error("lengths differ")
 	}
 
 	if (inputSlice[0] != outputSlice[0]) {
-		log.Error("first words should be equal")
+		t.Error("first words should be equal")
 	}
 
 }
@@ -190,11 +188,11 @@ func TestShiftWordsSliceRightLeftLong(t *testing.T) {
 
 
 	if len(inputSlice) != len(outputSlice) {
-		log.Error("lengths differ")
+		t.Error("lengths differ")
 	}
 
 	if (inputSlice[0] != outputSlice[0]) {
-		log.Error("first words should be equal")
+		t.Error("first words should be equal")
 	}
 
 }
