@@ -1,11 +1,9 @@
 package bitwisebytes
 
-
 import (
-	"fmt"
 	"encoding/binary"
+	"fmt"
 )
-
 
 //ByteOrder specifies how to convert byte sequences into
 // 16-, 32-, or 64-bit unsigned integers.
@@ -39,7 +37,6 @@ type littleEndian struct{}
 // -----------------------
 // Little Endian
 // -----------------------
-
 
 func (littleEndian) Uint8(b []byte) uint8 {
 	_ = b[0] // bounds check hint to compiler; see golang.org/issue/14808
@@ -160,6 +157,7 @@ func (l littleEndian) Uint8ShiftedBytes(mask, offset int, b []byte) uint8 {
 	if offset > 7 {
 		panic("offset > 7")
 	}
+
 	return uint8(l.Uint16(b)>>uint(offset)) & uint8(mask)
 }
 
@@ -173,7 +171,7 @@ func (l littleEndian) PutUint8ShiftedBytes(offset int, b []byte, v uint8) {
 	case 1:
 		l.OrPutUint8(b, uint8(v)<<uint(offset))
 	default:
-		panic(fmt.Sprintf("incorrect size:%s", len(b)))
+		panic(fmt.Sprintf("incorrect size:%d", len(b)))
 	}
 
 }
@@ -183,7 +181,7 @@ func (l littleEndian) Uint16ShiftedBytes(mask, offset int, b []byte) uint16 {
 		panic("offset > 7")
 	}
 	_ = b[2]
-	return uint16(l.Uint24(b) >> uint(offset)) & uint16(mask)
+	return uint16(l.Uint24(b)>>uint(offset)) & uint16(mask)
 }
 
 func (l littleEndian) PutUint16ShiftedBytes(offset int, b []byte, v uint16) {
@@ -208,10 +206,10 @@ func (l littleEndian) Uint24ShiftedBytes(mask, offset int, b []byte) uint32 {
 		panic("offset > 7")
 	}
 	_ = b[3] // bounds check hint to compiler; see golang.org/issue/14808
-	return uint32(l.Uint32(b) >> uint(offset)) & uint32(mask)
+	return uint32(l.Uint32(b)>>uint(offset)) & uint32(mask)
 }
 
-func (l littleEndian) PutUint24ShiftedBytes( offset int, b []byte, v uint32) {
+func (l littleEndian) PutUint24ShiftedBytes(offset int, b []byte, v uint32) {
 	if offset > 7 {
 		panic("offset > 7")
 	}
@@ -219,13 +217,12 @@ func (l littleEndian) PutUint24ShiftedBytes( offset int, b []byte, v uint32) {
 	case 4:
 		_ = b[3]
 		l.OrPutUint32(b, uint32(v)<<uint(offset))
-	case 2:
+	case 3:
 		_ = b[2]
 		l.OrPutUint24(b, uint32(v)<<uint(offset))
 	default:
-		panic(fmt.Sprintf("incorrect size:%s", len(b)))
+		panic(fmt.Sprintf("incorrect size:%d", len(b)))
 	}
-
 
 }
 
@@ -234,7 +231,7 @@ func (l littleEndian) Uint32ShiftedBytes(mask, offset int, b []byte) uint32 {
 		panic("offset > 7")
 	}
 	_ = b[3] // bounds check hint to compiler; see golang.org/issue/14808
-	return uint32(l.Uint40(b) >> uint(offset)) & uint32(mask)
+	return uint32(l.Uint40(b)>>uint(offset)) & uint32(mask)
 }
 
 func (l littleEndian) PutUint32ShiftedBytes(offset int, b []byte, v uint32) {
@@ -252,8 +249,6 @@ func (l littleEndian) PutUint32ShiftedBytes(offset int, b []byte, v uint32) {
 		panic(fmt.Sprintf("incorrect size:%s", len(b)))
 	}
 
-
-
 }
 
 func (l littleEndian) Uint40ShiftedBytes(mask, offset int, b []byte) uint64 {
@@ -262,7 +257,7 @@ func (l littleEndian) Uint40ShiftedBytes(mask, offset int, b []byte) uint64 {
 	}
 	_ = b[4] // bounds check hint to compiler; see golang.org/issue/14808
 
-	return uint64(l.Uint48(b) >> uint(offset)) & uint64(mask)
+	return uint64(l.Uint48(b)>>uint(offset)) & uint64(mask)
 }
 
 func (l littleEndian) PutUint40ShiftedBytes(offset int, b []byte, v uint64) {
@@ -288,7 +283,7 @@ func (l littleEndian) Uint48ShiftedBytes(mask, offset int, b []byte) uint64 {
 	}
 	_ = b[5] // bounds check hint to compiler; see golang.org/issue/14808
 
-	return uint64(l.Uint56(b) >> uint(offset)) & uint64(mask)
+	return uint64(l.Uint56(b)>>uint(offset)) & uint64(mask)
 }
 
 func (l littleEndian) PutUint48ShiftedBytes(offset int, b []byte, v uint64) {
@@ -313,7 +308,7 @@ func (l littleEndian) Uint56ShiftedBytes(mask, offset int, b []byte) uint64 {
 	}
 	_ = b[6] // bounds check hint to compiler; see golang.org/issue/14808
 
-	return uint64(l.Uint64(b) >> uint(offset)) & uint64(mask)
+	return uint64(l.Uint64(b)>>uint(offset)) & uint64(mask)
 }
 
 func (l littleEndian) PutUint56ShiftedBytes(offset int, b []byte, v uint64) {
@@ -339,9 +334,9 @@ func (l littleEndian) Uint64ShiftedBytes(mask, offset int, b []byte) uint64 {
 	}
 	_ = b[7] // bounds check hint to compiler; see golang.org/issue/14808
 
-	tmpB := make([]byte,len(b))
-	copy(tmpB,b)
-	tmpC , err := ShiftRight(tmpB,uint(offset))
+	tmpB := make([]byte, len(b))
+	copy(tmpB, b)
+	tmpC, err := ShiftRight(tmpB, uint(offset))
 
 	if err != nil {
 		panic(err.Error())
@@ -355,21 +350,22 @@ func (l littleEndian) PutUint64ShiftedBytes(offset int, b []byte, v uint64) {
 		panic("offset > 7")
 	}
 	switch len(b) {
-	case 9: {
-		_ = b[8]
+	case 9:
+		{
+			_ = b[8]
 
-		tmpV := make([]byte, 9)
-		l.OrPutUint64(tmpV, uint64(v))
-		tmpV2 , err  := ShiftLeft(tmpV, uint(offset))
+			tmpV := make([]byte, 9)
+			l.OrPutUint64(tmpV, uint64(v))
+			tmpV2, err := ShiftLeft(tmpV, uint(offset))
 
-		if err != nil {
-			panic(err.Error())
+			if err != nil {
+				panic(err.Error())
+			}
+
+			for i, aByte := range tmpV2 {
+				b[i] |= aByte
+			}
 		}
-
-		for i, aByte := range tmpV2 {
-			b[i] |= aByte
-		}
-	}
 
 	case 8:
 		_ = b[7]
@@ -378,41 +374,36 @@ func (l littleEndian) PutUint64ShiftedBytes(offset int, b []byte, v uint64) {
 		panic(fmt.Sprintf("incorrect size:%s", len(b)))
 	}
 
-
 }
 
-
-func (l littleEndian) PutBytesSliceShiftedBytes(offset int, out,in []byte) {
+func (l littleEndian) PutBytesSliceShiftedBytes(offset int, out, in []byte) {
 	if offset > 7 {
 		panic("offset > 7")
 	}
-	tmpOut , err := ShiftLeft(in,uint(offset))
+	tmpOut, err := ShiftLeft(in, uint(offset))
 	if err != nil {
 		panic(err.Error())
 	}
 
-	for i , _ := range tmpOut {
+	for i, _ := range tmpOut {
 		out[i] |= tmpOut[i]
 	}
 }
-
 
 func (l littleEndian) BytesSliceShiftedBytes(mask []byte, offset int, b []byte) []byte {
 	if offset > 7 {
 		panic("offset > 7")
 	}
-	returnBytes , err := ShiftRight(b,uint(offset))
+	returnBytes, err := ShiftRight(b, uint(offset))
 	if err != nil {
 		panic(err.Error())
 	}
 
-	for i , aByteMask := range mask {
-		returnBytes[i] =  returnBytes[i] & aByteMask
+	for i, aByteMask := range mask {
+		returnBytes[i] = returnBytes[i] & aByteMask
 	}
 	return returnBytes[0:len(mask)]
 }
-
-
 
 // --------------------------------
 // BigEndian TODO: incomplete code
